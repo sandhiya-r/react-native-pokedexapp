@@ -1,5 +1,5 @@
 import { useEffect, useState} from "react";
-import { Text, View, TouchableWithoutFeedback, Pressable, Image, StyleSheet, FlatList, TouchableOpacity} from "react-native";
+import { Text, TextInput, View, TouchableWithoutFeedback, Pressable, Image, StyleSheet, FlatList, TouchableOpacity} from "react-native";
 import { useFonts } from 'expo-font';
 import { Link } from 'expo-router';
 
@@ -64,8 +64,9 @@ const PokemonCard = (pokemon: Pokemon) => {
 export default function Index() {
 
   const [pokemons, setPokemons] = useState<Pokemon[]>([]);
-  const [isFlipped, setIsFlipped] = useState(false);
+  const [filteredPokemons, setFilteredPokemons] = useState(pokemons);
 
+  const [search, setSearch] = useState(''); // state for search bar input
   useEffect(() => {
         fetchPokemon();
     }, []);
@@ -84,6 +85,16 @@ export default function Index() {
   if (!loaded && !error) {
     return null;
   }
+  
+  const handleSearch = (text: string) => {
+    setSearch(text);
+    const textToSearch = text.toLowerCase().replaceAll(' ', '');
+    const filtered = pokemons.filter((item: Pokemon) =>
+      item.name.toLowerCase().includes(textToSearch)
+    );
+    setFilteredPokemons(filtered);
+  };
+
 
 
   async function fetchPokemon(){
@@ -111,9 +122,16 @@ export default function Index() {
    return(
     <View>
       <Text style = {styles.title}>Pokedex</Text>
+      <TextInput
+        style={styles.searchBar}
+        placeholder="Search for a Pokemon"
+        placeholderTextColor={'grey'}
+        value={search}
+        onChangeText={handleSearch}
+      />
       <FlatList
         style = {styles.mainContainer}
-        data = {pokemons}
+        data = {filteredPokemons}
         renderItem = {({item})=>
         <PokemonCard {...item}></PokemonCard>}
         numColumns={2}
@@ -126,6 +144,13 @@ export default function Index() {
 const styles = StyleSheet.create({
   mainContainer: {
     padding: 10,
+  },
+  searchBar: {
+    height: 40,
+    borderWidth: 1,
+    margin: 10,
+    paddingHorizontal: 10,
+    borderRadius: 5,
   },
   card: {
     flexDirection: 'column',
